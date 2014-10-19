@@ -10,12 +10,12 @@ fps = 60
 
 controls = [K_UP,K_DOWN,K_LEFT,K_RIGHT,K_ESCAPE,K_TAB]
 
-WHITE =     (250,250,250)
-RED =       (250,  0,  0)
-ORANGE =    (250,150,  0)
-LIGHT_GREY =(200,200,200)
-GREY =      (175,175,175)
-DARK_GREY = (150,150,150)
+WHITE =         (250,250,250)
+RED =           (250,  0,  0)
+ORANGE =        (250,150,  0)
+LIGHT_GREY =    (200,200,200)
+GREY =          (175,175,175)
+DARK_GREY =     (150,150,150)
 
 colors = {
     0:(230,230,230),
@@ -31,9 +31,9 @@ colors = {
     1024:(237,197, 63),
     2048:(250,210,  0)}
 
-
 background_color = GREY
 text_color = WHITE
+num_size = 25
 font_size = 20
 
 xmargin = int((windowwidth - (tilesize*boardwidth + (boardwidth - 1)))/2)
@@ -84,7 +84,6 @@ def new_number():
             else:
                 new_num.value = 4
         
-    
 def wait():
     while True:
         for event in pygame.event.get():
@@ -171,116 +170,158 @@ def check_2048():
             if board[x][y].value == 2048:
                 win = True
     return win
-          
-board = [[Tile(0,x,y)
-    for y in range(boardheight) ]
-        for x in range(boardwidth) ]
-
-(x,y) = (random.choice(range(boardwidth)),random.choice(range(boardheight)))
-board[x][y].value = 2
-
-# board[0][0].value = 2048
-# board[1][0].value = 1024
-# board[2][0].value = 512
-# board[3][0].value = 256
-# board[3][1].value = 128
-# board[2][1].value = 64
-# board[1][1].value = 32
-# board[0][1].value = 16
-# board[0][2].value = 8
-# board[1][2].value = 4
-# board[2][2].value = 2
-                
-pygame.init()
-fpsclock = pygame.time.Clock()
-displaysurf = pygame.display.set_mode((windowwidth, windowheight))
-pygame.display.set_caption('Py48')
-basicfont = pygame.font.Font('freesansbold.ttf', font_size)
-
-background = pygame.Surface(displaysurf.get_size())
-background = background.convert()
-
     
-turn = 0
-turn_up = 0
-score = 0
-gameover = False
-state = 0
-#cycle = 0
-
- 
-while state == 0:
-    background.fill(background_color)
-    displaysurf.blit(background, (0,0))
-    
-    textsurf = basicfont.render('PY48: Press an arrow key to play.', True, WHITE, GREY)
+def render_gameover():
+    textsurf = basicfont.render('GAME OVER', True, WHITE, GREY)
     textrect = textsurf.get_rect()
-    textrect.center = int(windowwidth / 2), int(windowheight / 2)
+    textrect.center = int(windowwidth / 2), int(windowheight - 40)
     displaysurf.blit(textsurf, textrect)
-    pygame.display.update()
-    
-    start = wait()
-    if start == K_ESCAPE:
+    closegame = wait()
+    if closegame == K_ESCAPE:
         pygame.quit()
         sys.exit()
-    elif start in controls[0:4]:
-        state = 1    
         
+def render_winscreen():
+    textsurf = basicfont.render('YOU WIN!', True, (250,250,0), GREY)
+    textrect = textsurf.get_rect()
+    textrect.center = int(windowwidth / 2), int(windowheight - 40)
+    displaysurf.blit(textsurf, textrect)
+    closegame = wait()
+    if closegame == K_ESCAPE:
+        pygame.quit()
+        sys.exit() 
 
-while True:
-    
-    background.fill(background_color)
-    displaysurf.blit(background, (0,0))
-    
-    # textsurf = basicfont.render(str(cycle), True, LIGHT_GREY, WHITE)
-    # textrect = textsurf.get_rect()
-    # textrect.center = 15,10
-    # displaysurf.blit(textsurf, textrect)
-    # cycle += 1
-    
-    if not gameover:
-        textsurf = basicfont.render('Moves: '+str(turn), True, WHITE, GREY)
-        textrect = textsurf.get_rect()
-        textrect.center = int(windowwidth / 2), int(windowheight - 40)
-        displaysurf.blit(textsurf, textrect)
-    
+def render_tiles():
     for y in range(boardheight):
         for x in range(boardwidth):
             pygame.draw.rect(displaysurf, board[x][y].tile_color(), (xmargin + (tilesize + 5)*x, ymargin + (tilesize + 5)*y, tilesize, tilesize))
             if board[x][y].value != 0:
-                textsurf = basicfont.render(str(board[x][y].value),True,board[x][y].num_color())
+                textsurf = numfont.render(str(board[x][y].value),True,board[x][y].num_color())
                 textrect = textsurf.get_rect()
                 textrect.center = xmargin + (tilesize + 5)*x + int(tilesize/2),ymargin + (tilesize + 5)*y + int(tilesize/2)
                 displaysurf.blit(textsurf, textrect)
-    
-    if gameover:
-        if state == 1:
-            textsurf = basicfont.render('GAME OVER', True, WHITE, GREY)
-            textrect = textsurf.get_rect()
-            textrect.center = int(windowwidth / 2), int(windowheight - 40)
-            displaysurf.blit(textsurf, textrect)
-            closegame = wait()
-            if closegame == K_ESCAPE:
-                pygame.quit()
-                sys.exit()
-            
-        if state == 2:
-            textsurf = basicfont.render('YOU WIN!', True, (250,250,0), GREY)
-            textrect = textsurf.get_rect()
-            textrect.center = int(windowwidth / 2), int(windowheight - 40)
-            displaysurf.blit(textsurf, textrect)
-            closegame = wait()
-            if closegame == K_ESCAPE:
-                pygame.quit()
-                sys.exit() 
-            
-    
 
+def render_ui(disable_moves,disable_cycle,cycle_num):    
     textsurf = basicfont.render('Score: '+str(score), True, WHITE, GREY)
     textrect = textsurf.get_rect()
     textrect.center = int(windowwidth / 2), 40
     displaysurf.blit(textsurf, textrect)
     
+    if not disable_moves:
+        textsurf = basicfont.render('Moves: '+str(turn), True, WHITE, GREY)
+        textrect = textsurf.get_rect()
+        textrect.center = int(windowwidth / 2), int(windowheight - 40)
+        displaysurf.blit(textsurf, textrect)
+        
+    if not disable_cycle:
+        textsurf = basicfont.render(str(cycle_num), True, WHITE, GREY)
+        textrect = textsurf.get_rect()
+        textrect.topleft = 5,5
+        displaysurf.blit(textsurf, textrect)
+        
+def handle_input(score_arg,turn_arg):
+    turn_up = 0
+    keypressed = wait()
+    
+    for event in pygame.event.get(QUIT): # get all the QUIT events
+        pygame.quit()
+        sys.exit() # terminate if any QUIT events are present
+
+    if keypressed == K_ESCAPE:
+        pygame.quit()
+        sys.exit()
+    elif keypressed in controls[0:4]:
+        (bonus,turn_up) = move(keypressed)
+        score_arg += bonus
+    elif keypressed == K_TAB:
+        board[0][0].value = 2048
+    turn_arg += turn_up
+    
+    return (score_arg,turn_arg,bool(turn_up))
+        
+def initialize():
+    global fpsclock,displaysurf,basicfont,numfont,background
+    
+    pygame.init()
+    fpsclock = pygame.time.Clock()
+    displaysurf = pygame.display.set_mode((windowwidth, windowheight))
+    pygame.display.set_caption('Py48')
+    basicfont = pygame.font.Font('freesansbold.ttf', font_size)
+    numfont = pygame.font.Font('freesansbold.ttf', num_size)
+
+    background = pygame.Surface(displaysurf.get_size())
+    background = background.convert()
+        
+def make_board(display_all_nums = False):       
+    global board
+    
+    board = [[Tile(0,x,y)
+        for y in range(boardheight) ]
+            for x in range(boardwidth) ]
+
+    (x,y) = (random.choice(range(boardwidth)),random.choice(range(boardheight)))
+    board[x][y].value = 2
+
+    if display_all_nums:
+        board[0][0].value = 2048
+        board[1][0].value = 1024
+        board[2][0].value = 512
+        board[3][0].value = 256
+        board[3][1].value = 128
+        board[2][1].value = 64
+        board[1][1].value = 32
+        board[0][1].value = 16
+        board[0][2].value = 8
+        board[1][2].value = 4
+        board[2][2].value = 2
+        
+def start_screen():
+    global state
+    while state == 0:
+        background.fill(background_color)
+        displaysurf.blit(background, (0,0))
+        
+        textsurf = basicfont.render('PY48: Press an arrow key to play.', True, WHITE, GREY)
+        textrect = textsurf.get_rect()
+        textrect.center = int(windowwidth / 2), int(windowheight / 2)
+        displaysurf.blit(textsurf, textrect)
+        pygame.display.update()
+        
+        start = wait()
+        if start == K_ESCAPE:
+            pygame.quit()
+            sys.exit()
+        elif start in controls[0:4]:
+            state = 1 
+
+
+make_board()
+initialize()
+    
+turn = 0
+score = 0
+gameover = False
+state = 0
+cycle = 0
+ 
+start_screen()            
+
+while True:
+    # Main game loop
+    background.fill(background_color)
+    displaysurf.blit(background, (0,0))
+    
+    render_ui(gameover,False,cycle)
+    cycle += 1
+    
+    render_tiles()
+    
+    if gameover:
+        if state == 1:
+            render_gameover()
+        elif state == 2:
+            render_winscreen()
+
     if check_2048():
         state = 2
         gameover = True
@@ -288,27 +329,15 @@ while True:
     if not gameover:
         gameover = check_gameover()
 
+    # DO ALL THE ANIMATION SHIT!!!
+    # fpsclock.tick(fps)
+    
+    
     pygame.display.update()
         
     if not gameover:
-        keypressed = wait()
+        (score,turn,turn_taken) = handle_input(score,turn)
+        if turn_taken:
+            new_number()
     
-        for event in pygame.event.get(QUIT): # get all the QUIT events
-            pygame.quit()
-            sys.exit() # terminate if any QUIT events are present
     
-        if keypressed == K_ESCAPE:
-            pygame.quit()
-            sys.exit()
-        elif keypressed in controls[0:4]:
-            (bonus,turn_up) = move(keypressed)
-            score += bonus
-        elif keypressed == K_TAB:
-            board[0][0].value = 2048
-    
-    turn += turn_up        
-    if turn_up == 1 and not gameover:
-        new_number()
-    
-    pygame.display.update()
-    fpsclock.tick(fps)
