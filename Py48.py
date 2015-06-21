@@ -86,6 +86,7 @@ def new_number():
         
 def wait():
     while True:
+	fpsclock.tick(fps)
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -278,6 +279,7 @@ def make_board(display_all_nums = False):
 def start_screen():
     global state
     while state == 0:
+	fpsclock.tick(fps)
         background.fill(background_color)
         displaysurf.blit(background, (0,0))
         
@@ -330,7 +332,8 @@ while True:
         gameover = check_gameover()
 
     # DO ALL THE ANIMATION SHIT!!!
-    # fpsclock.tick(fps)
+    
+	fpsclock.tick(fps)
     
     
     pygame.display.update()
