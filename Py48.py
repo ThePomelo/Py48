@@ -331,7 +331,7 @@ while True:
     if not gameover:
         gameover = check_gameover()
 
-    # DO ALL THE ANIMATION SHIT!!!
+    # TODO: Animation
     
 	fpsclock.tick(fps)
     
